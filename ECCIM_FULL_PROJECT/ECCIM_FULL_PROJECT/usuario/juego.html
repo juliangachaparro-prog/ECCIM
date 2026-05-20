@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle del Juego - ECCIM</title>
+    <link rel="stylesheet" href="../css/style.css"> 
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo"><h2>ECCIM</h2></div>
+        <div class="nav-links">
+            <a href="dashboard.html">Catálogo</a>
+            <a href="biblioteca.html">Mis Compras</a>
+            <a href="lista_deseados.html" class="active">Lista de Deseados</a>
+            <a href="notificaciones.html">Notificaciones</a>
+                <a href="soporte.html">Soporte</a>
+            <a href="#" id="btnCerrarSesion">Cerrar Sesión</a>
+        </div>
+    </nav>
+
+    <header id="bannerJuego">
+        </header>
+
+    <main class="detalle-juego">
+        <div class="detalle-contenido">
+            
+            <section id="infoJuego">
+                <h1>Cargando datos del juego...</h1>
+            </section>
+
+            <section id="detallesTecnicos" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #374151;">
+                <div style="margin-bottom: 20px;">
+                    <strong style="color: #60a5fa; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Desarrollado por</strong>
+                    <p id="nombreDesarrollador" style="font-size: 18px; color: #f3f4f6; margin-top: 4px;">Cargando desarrollador...</p>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <strong style="color: #60a5fa; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Género / Categoría</strong>
+                    <p id="nombre_categoria" style="font-size: 18px; color: #f3f4f6; margin-top: 4px; font-weight: bold;">Cargando categoría...</p>
+                    <p id="descripcion" style="font-size: 15px; color: #9ca3af; margin-top: 6px; line-height: 1.6;">Cargando descripción de la categoría...</p>
+                </div>
+            </section>
+
+           
+
+        </div>
+    </main>
+
+    <section class="resenas-section">
+        <h2>Reseñas de la Comunidad</h2>
+        <div id="contenedorResenasFlujo">
+            <p class="subtitle" style="text-align: left;">Cargando opiniones...</p>
+        </div>
+    </section>
+
+     <section id="historialActualizaciones" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #374151;">
+                <h2 style="color: #60a5fa; font-size: 20px; margin-bottom: 15px;">Historial de Actualizaciones</h2>
+                <div id="contenedorActualizaciones">
+                    <p class="subtitle" style="text-align: left;">Cargando notas de parche...</p>
+                </div>
+            </section>
+
+    <script type="module" src="../js/juego.js"></script>
+
+    <script>
+        document.getElementById('btnCerrarSesion')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('usuario');
+            window.location.href = '../login.html'; 
+        });
+    </script>
+</body>
+</html>

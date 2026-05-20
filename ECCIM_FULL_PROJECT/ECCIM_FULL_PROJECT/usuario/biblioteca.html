@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Compras - ECCIM</title>
+    <!-- Cargamos el CSS unificado de la raíz -->
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+    <!-- NAVBAR PRINCIPAL -->
+    <nav class="navbar">
+        <div class="logo"><h2>ECCIM</h2></div>
+        <div class="nav-links">
+            <a href="dashboard.html">Catálogo</a>
+            <a href="biblioteca.html" class="active">Mis Compras</a>
+            <a href="lista_deseados.html" class="active">Lista de Deseados</a>
+            <a href="notificaciones.html">Notificaciones</a>
+            <a href="soporte.html">Soporte</a>
+            <a href="#" id="btnCerrarSesion">Cerrar Sesión</a>
+        </div>
+    </nav>
+
+    <!-- SECCIÓN DE LA BIBLIOTECA -->
+    <main class="seccion-juegos">
+        <h1 style="text-align: left; font-size: 36px; margin-bottom: 10px;">Tu Biblioteca</h1>
+        <p class="subtitle" style="text-align: left; margin-bottom: 30px;">Aquí tienes todos los títulos que has adquirido.</p>
+        
+        <!-- Reutilizamos el contenedor ID "catalogo" para heredar el diseño Grid -->
+        <div id="catalogo">
+            <p class="subtitle" style="text-align: left;">Cargando tus juegos adquiridos...</p>
+        </div>
+    </main>
+
+    <!-- Enlace al script dentro de /js -->
+    <script type="module" src="../js/biblioteca.js"></script>
+
+    <script>
+        document.getElementById('btnCerrarSesion')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('usuario');
+            window.location.href = '../login.html'; 
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Deseados - ECCIM</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo"><h2>ECCIM</h2></div>
+        <div class="nav-links">
+            <a href="dashboard.html">Catálogo</a>
+            <a href="biblioteca.html">Mis Compras</a>
+            <a href="lista_deseados.html" class="active">Lista de Deseados</a>
+            <a href="notificaciones.html">Notificaciones</a>
+                <a href="soporte.html">Soporte</a>
+            <a href="#" id="btnCerrarSesion">Cerrar Sesión</a>
+        </div>
+    </nav>
+
+    <main class="seccion-juegos">
+        <h1 style="text-align: left; font-size: 36px; margin-bottom: 10px;">Lista de Deseados</h1>
+        <p class="subtitle" style="text-align: left; margin-bottom: 30px;">Títulos que tienes en la mira y sus configuraciones de alerta.</p>
+        
+        <div id="catalogo">
+            <p class="subtitle" style="text-align: left;">Cargando tu lista de deseos...</p>
+        </div>
+    </main>
+
+    <script type="module" src="../js/lista_deseados.js"></script>
+
+    <script>
+        document.getElementById('btnCerrarSesion')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('usuario');
+            window.location.href = '../login.html'; 
+        });
+    </script>
+</body>
+</html>

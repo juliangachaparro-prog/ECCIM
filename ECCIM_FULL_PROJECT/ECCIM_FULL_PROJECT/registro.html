@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+    <title>Registro</title>
+
+    <link
+    rel="stylesheet"
+    href="css/style.css">
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Registro</h1>
+
+        <form id="formRegistro">
+
+            <input
+            type="text"
+            id="num_doc"
+            placeholder="Número documento"
+            required>
+
+            <input
+            type="text"
+            id="username"
+            placeholder="Usuario"
+            required>
+
+            <input
+            type="email"
+            id="correo"
+            placeholder="Correo"
+            required>
+
+            <input
+            type="password"
+            id="password"
+            placeholder="Contraseña"
+            required>
+
+            <button type="submit">
+
+                Registrarse
+
+            </button>
+
+        </form>
+
+        <a
+        class="link"
+        href="login.html">
+
+            Ya tengo cuenta
+
+        </a>
+
+    </div>
+
+    <!-- LIBRERÍA MD5 -->
+    <script src="https://cdn.jsdelivr.net/npm/js-md5@0.8.3/src/md5.min.js"></script>
+
+    <!-- JS REGISTRO -->
+    <script
+    type="module"
+    src="js/registro.js">
+
+    </script>
+
+</body>
+</html>

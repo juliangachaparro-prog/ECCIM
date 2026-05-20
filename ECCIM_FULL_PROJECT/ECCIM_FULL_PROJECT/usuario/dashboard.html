@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de Juegos - ECCIM</title>
+    <!-- Salimos de /usuario y cargamos el CSS de la raíz -->
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+
+    <!-- NAVBAR PRINCIPAL -->
+    <nav class="navbar">
+        <div class="logo"><h2>ECCIM</h2></div>
+        <div class="nav-links">
+            <a href="dashboard.html" class="active">Catálogo</a>
+            <a href="biblioteca.html">Mis Compras</a>
+            <a href="lista_deseados.html" class="active">Lista de Deseados</a>
+            <a href="notificaciones.html">Notificaciones</a>
+                <a href="soporte.html">Soporte</a>
+            <a href="#" id="btnCerrarSesion">Cerrar Sesión</a>
+        </div>
+    </nav>
+
+    <!-- HERO BANNER -->
+    <header class="hero">
+        <div class="hero-content">
+            <h1 style="text-align: left; font-size: 45px; margin-bottom: 10px;">¡Bienvenido a ECCIM!</h1>
+            <p class="subtitle" style="text-align: left; color: #d1d5db; font-size: 18px;">
+                Descubre los mejores títulos de nuestra comunidad.
+            </p>
+        </div>
+    </header>
+
+    <!-- SECCIÓN DEL CATÁLOGO -->
+    <main class="seccion-juegos">
+        <h2 style="font-size: 28px; margin-bottom: 20px;">Catálogo Disponible</h2>
+        <div id="catalogo">
+            <p class="subtitle" style="text-align: left;">Conectando con Supabase...</p>
+        </div>
+    </main>
+
+    <!-- Salimos de /usuario y entramos a /js/dashboard.js -->
+    <script type="module" src="../js/dashboard.js"></script>
+
+    <script>
+        document.getElementById('btnCerrarSesion')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('usuario');
+            window.location.href = '../login.html'; // Ajustado si tu login está en la raíz
+        });
+    </script>
+</body>
+</html>

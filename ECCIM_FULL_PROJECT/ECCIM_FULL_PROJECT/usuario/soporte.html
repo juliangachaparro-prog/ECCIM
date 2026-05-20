@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>Soporte</title>
+
+    <link
+    rel="stylesheet"
+    href="../css/style.css">
+
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="logo"><h2>ECCIM</h2></div>
+        <div class="nav-links">
+            <a href="dashboard.html">Catálogo</a>
+            <a href="biblioteca.html">Mis Compras</a>
+            <a href="lista_deseados.html">Lista de Deseados</a>
+            <a href="notificaciones.html" class="active">Notificaciones</a>
+                <a href="soporte.html">Soporte</a>
+            <a href="#" id="btnCerrarSesion">Cerrar Sesión</a>
+        </div>
+    </nav>
+
+    <section class="contenedor-soporte">
+
+        <h1>
+
+            Crear Ticket
+
+        </h1>
+
+        <form id="formTicket">
+
+            <input
+            type="text"
+            id="asunto"
+            placeholder="Asunto"
+            required>
+
+            <button type="submit">
+
+                Enviar Ticket
+
+            </button>
+
+        </form>
+        <br>
+        <br>
+        <div id="listaTickets">
+
+        </div>
+
+    </section>
+
+    <script
+    type="module"
+    src="../js/soporte.js">
+
+    </script>
+        <script>
+        document.getElementById('btnCerrarSesion')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('usuario');
+            window.location.href = '../login.html'; 
+        });
+    </script>
+
+</body>
+</html>

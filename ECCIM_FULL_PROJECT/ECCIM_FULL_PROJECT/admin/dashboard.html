@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+    <title>
+
+        ECCIM ADMIN
+
+    </title>
+
+    <link
+    rel="stylesheet"
+    href="../css/style.css">
+
+</head>
+
+<body>
+
+    <div class="admin-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+
+            <h2>
+
+                ECCIM ADMIN
+
+            </h2>
+
+            <button onclick="cargarTabla('usuarios')">
+
+                Usuarios
+
+            </button>
+
+            <button onclick="cargarTabla('juegos')">
+
+                Juegos
+
+            </button>
+
+            <button onclick="cargarTabla('compras')">
+
+                Compras
+
+            </button>
+
+            <button onclick="cargarTabla('detalle_compras')">
+
+                Detalle Compras
+
+            </button>
+
+            <button onclick="cargarTabla('pagos')">
+
+                Pagos
+
+            </button>
+
+            <button onclick="cargarTabla('biblioteca')">
+
+                Biblioteca
+
+            </button>
+
+            <button onclick="cargarTabla('tickets_soporte')">
+
+                Tickets
+
+            </button>
+
+            <button onclick="cargarTabla('resenas')">
+
+                Reseñas
+
+            </button>
+
+<a href="#" id="btnCerrarSesion" style="color:white;"onclick="localStorage.removeItem('usuario'); window.location.href='../login.html'">Cerrar Sesión</a>
+        </aside>
+
+        <!-- CONTENIDO -->
+        <main class="contenido">
+
+
+
+            <div id="tablaContainer">
+
+                <h1>
+
+                    Panel Administrativo
+
+                </h1>
+
+                <p>
+
+                    Selecciona una tabla.
+
+                </p>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <script
+    type="module"
+    src="../js/admin.js">
+
+    </script>
+        <script>
+        document.getElementById('btnCerrarSesion')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('usuario');
+            window.location.href = '../login.html'; 
+        });
+    </script>
+
+</body>
+</html>

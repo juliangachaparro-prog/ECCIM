@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+    <title>
+
+        Panel de Soporte
+
+    </title>
+
+    <link
+    rel="stylesheet"
+    href="../css/style.css">
+
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+
+        <h2>
+
+            ECCIM Soporte
+
+        </h2>
+
+        <div class="nav-links">
+
+            <a href="#" id="btnCerrarSesion">Cerrar Sesión</a>
+
+        </div>
+
+    </nav>
+
+    <!-- CONTENIDO -->
+    <section class="contenedor-soporte">
+
+        <h1>
+
+            Gestión de Tickets
+
+        </h1>
+
+        <p class="subtitle">
+
+            Administra solicitudes y responde a los usuarios.
+
+        </p>
+
+        <!-- LISTA -->
+        <div id="listaTickets">
+
+        </div>
+
+    </section>
+
+    <!-- JS -->
+    <script
+    type="module"
+    src="../js/soporte-dashboard.js">
+
+    </script>
+        <script>
+        document.getElementById('btnCerrarSesion')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('usuario');
+            window.location.href = '../login.html'; 
+        });
+    </script>
+</body>
+</html>
