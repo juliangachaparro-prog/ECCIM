@@ -28,6 +28,39 @@ function obtenerDegradadoPorId(id) {
     return paletas[indice];
 }
 
+// NUEVA FUNCIÓN: Comprueba si el usuario ya posee el juego o si está en su lista de deseos
+async function verificarEstadoUsuario(idUsuario) {
+    let yaComprado = false;
+    let enListaDeseos = false;
+
+    try {
+        // 1. Verificar si ya existe en la biblioteca del usuario
+        const { data: biblioteca, error: errorBib } = await supabase
+            .from("biblioteca")
+            .select("id_juego")
+            .eq("id_usuario", idUsuario)
+            .eq("id_juego", id_juego)
+            .maybeSingle();
+        
+        if (!errorBib && biblioteca) yaComprado = true;
+
+        // 2. Verificar si ya existe en su lista de deseos
+        const { data: deseos, error: errorDes } = await supabase
+            .from("lista_deseos")
+            .select("id_lista")
+            .eq("id_usuario", idUsuario)
+            .eq("id_juego", id_juego)
+            .maybeSingle();
+
+        if (!errorDes && deseos) enListaDeseos = true;
+
+    } catch (err) {
+        console.error("Error al verificar estados previos del usuario:", err);
+    }
+
+    return { yaComprado, enListaDeseos };
+}
+
 async function cargarPantallaJuego() {
     if (!id_juego) {
         if (infoJuego) infoJuego.innerHTML = "<h1>Error: Enlace inválido.</h1>";
@@ -51,127 +84,92 @@ async function cargarPantallaJuego() {
 
     if (banner) banner.style.background = obtenerDegradadoPorId(id_juego);
 
+    // Obtener datos del usuario local para la validación previa de botones
+    const usuarioLogueado = JSON.parse(localStorage.getItem("usuario"));
+    let estado = { yaComprado: false, enListaDeseos: false };
+    
+    if (usuarioLogueado) {
+        estado = await verificarEstadoUsuario(usuarioLogueado.id_usuario);
+    }
+
     if (infoJuego) {
         const fecha = juego.fecha_lanzamiento 
             ? new Date(juego.fecha_lanzamiento).toLocaleDateString("es-CO") 
             : "No disponible"
 
-        // Mantenemos la clase ".detalle-contenido" para respetar tu hoja de estilos
+        // Modificación: Si ya está comprado, el botón de compra nace deshabilitado
+        const botonCompraHTML = estado.yaComprado 
+            ? `<button id="btnComprar" disabled style="background-color: #1f2937; color: #9ca3af; cursor: not-allowed;">Ya tienes este juego</button>`
+            : `<button id="btnComprar">Comprar Juego</button>`;
+
         infoJuego.innerHTML = `
             <div class="detalle-contenido">
                 <h1>${juego.titulo}</h1>
                 <p class="subtitle" style="text-align:left;">Fecha de lanzamiento: ${fecha}</p>
                 <h2>$${juego.precio_base}</h2>
-                <button id="btnComprar">Comprar Juego</button>
+                ${botonCompraHTML}
             </div>
         `
-        const botonComprar =
-document.getElementById(
-    "btnComprar"
-)
+        const botonComprar = document.getElementById("btnComprar")
 
-botonComprar.addEventListener(
-"click",
-async () => {
+        botonComprar.addEventListener("click", async () => {
+            const usuarioLogueadoBtn = JSON.parse(localStorage.getItem("usuario"))
 
-    const usuarioLogueado =
-    JSON.parse(
-        localStorage.getItem(
-            "usuario"
-        )
-    )
+            if(!usuarioLogueadoBtn){
+                alert("Debes iniciar sesión")
+                return
+            }
 
-    if(!usuarioLogueado){
+            // Bloqueo de seguridad extra en el clic por si acaso
+            const reVerificar = await verificarEstadoUsuario(usuarioLogueadoBtn.id_usuario);
+            if (reVerificar.yaComprado) {
+                alert("Ya adquiriste este título anteriormente.");
+                return;
+            }
 
-        alert(
-            "Debes iniciar sesión"
-        )
+            // COMPRA
+            const { data: compra } = await supabase
+            .from("compras")
+            .insert([{
+                id_usuario: usuarioLogueadoBtn.id_usuario,
+                fecha_compra: new Date(),
+                total_compra: juego.precio_base
+            }])
+            .select()
+            .single()
 
-        return
-    }
+            // DETALLE
+            await supabase
+            .from("detalle_compras")
+            .insert([{
+                id_compra: compra.id_compra,
+                id_juego,
+                precio_unitario: juego.precio_base
+            }])
 
-    // COMPRA
-    const { data: compra }
-    =
-    await supabase
-    .from("compras")
-    .insert([{
+            // PAGO
+            await supabase
+            .from("pagos")
+            .insert([{
+                id_compra: compra.id_compra,
+                metodo_pago: "Digital",
+                estado_pago: "Completado"
+            }])
 
-        id_usuario:
-        usuarioLogueado.id_usuario,
+            // BIBLIOTECA
+            await supabase
+            .from("biblioteca")
+            .insert([{
+                id_usuario: usuarioLogueadoBtn.id_usuario,
+                id_juego,
+                horas_jugadas: 0,
+                fecha_adquisicion: new Date()
+            }])
 
-        fecha_compra:
-        new Date(),
-
-        total_compra:
-        juego.precio_base
-
-    }])
-    .select()
-    .single()
-
-    // DETALLE
-    await supabase
-    .from("detalle_compras")
-    .insert([{
-
-        id_compra:
-        compra.id_compra,
-
-        id_juego,
-
-        precio_unitario:
-        juego.precio_base
-
-    }])
-
-    // PAGO
-    await supabase
-    .from("pagos")
-    .insert([{
-
-        id_compra:
-        compra.id_compra,
-
-        metodo_pago:
-        "Digital",
-
-        estado_pago:
-        "Completado"
-
-    }])
-
-    // BIBLIOTECA
-    await supabase
-    .from("biblioteca")
-    .insert([{
-
-        id_usuario:
-        usuarioLogueado.id_usuario,
-
-        id_juego,
-
-        horas_jugadas: 0,
-
-        fecha_adquisicion:
-        new Date()
-
-    }])
-
-    alert(
-        "Compra realizada"
-    )
-
-    window.location.href =
-    "biblioteca.html"
-
-})
-
-
-
-      
-            
-        
+            // Si estaba en la lista de deseos, puedes dejarlo ahí o limpiarlo. Por ahora se confirma la compra.
+            alert("Compra realizada")
+            window.location.href = "biblioteca.html"
+        })
     }
 
     // ------------------------------------------------------------------
@@ -190,11 +188,11 @@ async () => {
             txtDesarrollador.innerText = "Estudio Independiente";
         }
     }
-// ------------------------------------------------------------------
+
+    // ------------------------------------------------------------------
     // 3. BUSCAR LA CATEGORÍA Y DESCRIPCIÓN VÍA LAS 2 TABLAS EXACTAS
     // ------------------------------------------------------------------
     try {
-        // TABLA 1: Cambiado a "Juegos Categorias" respetando mayúsculas y espacio del flujo original
         const { data: tablaIntermedia, error: errorIntermedio } = await supabase
             .from("juegos_categorias")
             .select("id_categoria")
@@ -204,7 +202,6 @@ async () => {
             const idCategoriaEncontrado = tablaIntermedia[0].id_categoria;
 
             if (idCategoriaEncontrado) {
-                // TABLA 2: Consultamos la tabla principal 'categorias'
                 const { data: categoriaFinal, error: errorCat } = await supabase
                     .from("categorias")
                     .select("nombre_categoria, descripcion")
@@ -212,19 +209,16 @@ async () => {
                     .single();
 
                 if (!errorCat && categoriaFinal) {
-                    // Inyectamos de forma directa usando tus constantes del DOM
                     if (txtCategoria) txtCategoria.innerText = categoriaFinal.nombre_categoria;
                     if (txtDescripcionCat) txtDescripcionCat.innerText = categoriaFinal.descripcion;
-                    console.log("Categoría vinculada y cargada con éxito desde 'Juegos Categorias' y 'categorias'.");
+                    console.log("Categoría vinculada y cargada con éxito.");
                 } else {
-                    if (errorCat) console.error("Error al leer la tabla 'categorias':", errorCat);
                     marcarCategoriaPorDefecto();
                 }
             } else {
                 marcarCategoriaPorDefecto();
             }
         } else {
-            if (errorIntermedio) console.error("Error al leer la tabla 'Juegos Categorias':", errorIntermedio);
             marcarCategoriaPorDefecto();
         }
     } catch (err) {
@@ -232,11 +226,11 @@ async () => {
         marcarCategoriaPorDefecto();
     }
 
-    // Función de respaldo por si el juego no posee un registro asociado
     function marcarCategoriaPorDefecto() {
         if (txtCategoria) txtCategoria.innerText = "General";
-        if (txtDescripcionCat) txtDescripcionCat.innerText = "Este título no cuenta con una descripción de género asignada en la base de datos.";
+        if (txtDescripcionCat) txtDescripcionCat.innerText = "Este título no cuenta con una descripción de género asignada.";
     }
+
     // ------------------------------------------------------------------
     // 4. CARGAR RESEÑAS DIRECTAMENTE DE SUPABASE
     // ------------------------------------------------------------------
@@ -255,85 +249,75 @@ async () => {
 
         if (!resenas || resenas.length === 0) {
             contenedorResenas.innerHTML += `<p class="subtitle">Este juego no tiene reseñas en Supabase aún. ¡Sé el primero!</p>`
-            return
+        } else {
+            resenas.forEach(resena => {
+                const numEstrellas = Math.min(Math.max(parseInt(resena.calificacion) || 0, 0), 5);
+                const estrellas = "⭐".repeat(numEstrellas) || "Sin calificación";
+                
+                const resenaDiv = document.createElement("div")
+                resenaDiv.classList.add("resena")
+                resenaDiv.innerHTML = `
+                    <div class="resena-header">
+                        <strong>Usuario #${resena.id_usuario}</strong>
+                        <span>${estrellas}</span>
+                    </div>
+                    <p>${resena.comentario || 'Sin comentarios.'}</p>
+                `
+                contenedorResenas.appendChild(resenaDiv)
+            })
         }
-
-        resenas.forEach(resena => {
-            const numEstrellas = Math.min(Math.max(parseInt(resena.calificacion) || 0, 0), 5);
-            const estrellas = "⭐".repeat(numEstrellas) || "Sin calificación";
-            
-            const resenaDiv = document.createElement("div")
-            resenaDiv.classList.add("resena")
-            resenaDiv.innerHTML = `
-                <div class="resena-header">
-                    <strong>Usuario #${resena.id_usuario}</strong>
-                    <span>${estrellas}</span>
-                </div>
-                <p>${resena.comentario || 'Sin comentarios.'}</p>
-            `
-            contenedorResenas.appendChild(resenaDiv)
-        })
     }
+
     // ------------------------------------------------------------------
-    // 5. CARGAR HISTORIAL DE ACTUALIZACIONES (NUEVO)
+    // 5. CARGAR HISTORIAL DE ACTUALIZACIONES
     // ------------------------------------------------------------------
     try {
-        // Consultamos la tabla basándonos en los campos de tu flujo
         const { data: actualizaciones, error: errorActualizaciones } = await supabase
-            .from("actualizaciones") // Probamos en minúscula primero
+            .from("actualizaciones")
             .select("id_actualizacion, version, notas_parche")
             .eq("id_juego", id_juego)
-            .order("id_actualizacion", { ascending: false }); // Muestra la última versión primero
+            .order("id_actualizacion", { ascending: false });
 
-        if (errorActualizaciones) {
-            // Si da error de caché por mayúsculas, intentamos con la 'A' mayúscula
-            throw errorActualizaciones;
-        }
+        if (errorActualizaciones) throw errorActualizaciones;
 
         if (contenedorActualizaciones) {
             contenedorActualizaciones.innerHTML = "";
 
             if (!actualizaciones || actualizaciones.length === 0) {
                 contenedorActualizaciones.innerHTML = `<p class="subtitle" style="text-align: left; color: #9ca3af;">Este juego se encuentra en su versión de lanzamiento base. No hay parches registrados.</p>`;
-                return;
+            } else {
+                actualizaciones.forEach(parche => {
+                    const parcheDiv = document.createElement("div");
+                    parcheDiv.style.backgroundColor = "#1f2937";
+                    parcheDiv.style.padding = "15px";
+                    parcheDiv.style.borderRadius = "8px";
+                    parcheDiv.style.marginBottom = "12px";
+                    parcheDiv.style.borderLeft = "4px solid #3b82f6";
+                    parcheDiv.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <strong style="color: #ffffff; font-size: 16px;">Versión ${parche.version}</strong>
+                            <span style="color: #9ca3af; font-size: 12px;">ID Parche: #${parche.id_actualizacion}</span>
+                        </div>
+                        <p style="color: #d1d5db; font-size: 14px; line-height: 1.5; margin: 0; white-space: pre-line;">${parche.notas_parche || 'No se detallaron las notas de este parche.'}</p>
+                    `;
+                    contenedorActualizaciones.appendChild(parcheDiv);
+                });
             }
-
-            // Pintamos cada actualización de forma elegante
-            actualizaciones.forEach(parche => {
-                const parcheDiv = document.createElement("div");
-                parcheDiv.style.backgroundColor = "#1f2937";
-                parcheDiv.style.padding = "15px";
-                parcheDiv.style.borderRadius = "8px";
-                parcheDiv.style.marginBottom = "12px";
-                parcheDiv.style.borderLeft = "4px solid #3b82f6";
-
-                parcheDiv.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <strong style="color: #ffffff; font-size: 16px;">Versión ${parche.version}</strong>
-                        <span style="color: #9ca3af; font-size: 12px;">ID Parche: #${parche.id_actualizacion}</span>
-                    </div>
-                    <p style="color: #d1d5db; font-size: 14px; line-height: 1.5; margin: 0; white-space: pre-line;">${parche.notas_parche || 'No se detallaron las notas de este parche.'}</p>
-                `;
-                contenedorActualizaciones.appendChild(parcheDiv);
-            });
         }
     } catch (err) {
-        console.warn("Fallo al cargar desde 'actualizaciones', reintentando con mayúscula...", err);
-        // Plan B automático por si la tabla tiene la inicial en mayúscula en tu Supabase
         cargarActualizacionesMayuscula(id_juego);
     }
 
-    // Función auxiliar para tolerar nombres de tabla como 'Actualizaciones'
     async function cargarActualizacionesMayuscula(idJuego) {
-        const { data: actualizaciones, error } = await supabase
+        const { data: actualizaciones } = await supabase
             .from("Actualizaciones")
             .select("id_actualizacion, version, notas_parche")
             .eq("id_juego", idJuego)
             .order("id_actualizacion", { ascending: false });
 
         if (contenedorActualizaciones) {
-            if (!error && actualizaciones && actualizaciones.length > 0) {
-                contenedorActualizaciones.innerHTML = "";
+            contenedorActualizaciones.innerHTML = "";
+            if (actualizaciones && actualizaciones.length > 0) {
                 actualizaciones.forEach(parche => {
                     const parcheDiv = document.createElement("div");
                     parcheDiv.style.backgroundColor = "#1f2937";
@@ -351,11 +335,105 @@ async () => {
                     contenedorActualizaciones.appendChild(parcheDiv);
                 });
             } else {
-                contenedorActualizaciones.innerHTML = `<p class="subtitle" style="text-align: left; color: #9ca3af;">Este juego se encuentra en su versión de lanzamiento base. No hay parches registrados.</p>`;
+                contenedorActualizaciones.innerHTML = `<p class="subtitle" style="text-align: left; color: #9ca3af;">Este juego se encuentra en su versión de lanzamiento base.</p>`;
             }
         }
     }
 }
 
-// Aseguramos que cargue tras el árbol de renderizado del HTML
 document.addEventListener("DOMContentLoaded", cargarPantallaJuego);
+
+
+// ==================================================================
+// FUNCIONALIDAD: LISTA DE DESEOS (CON FILTRO DE ESTADO PREVIO ACTUALIZADO)
+// ==================================================================
+const observarInfoJuego = new MutationObserver(async (mutations, observer) => {
+    const btnComprar = document.getElementById("btnComprar");
+    
+    if (btnComprar && !document.getElementById("btnDeseos")) {
+        const usuarioLogueado = JSON.parse(localStorage.getItem("usuario"));
+        let estado = { yaComprado: false, enListaDeseos: false };
+
+        if (usuarioLogueado) {
+            estado = await verificarEstadoUsuario(usuarioLogueado.id_usuario);
+        }
+
+        // Si el usuario ya compró el juego, no tiene sentido mostrar el botón de lista de deseos
+        if (estado.yaComprado) {
+            observer.disconnect();
+            return;
+        }
+
+        const btnDeseos = document.createElement("button");
+        btnDeseos.id = "btnDeseos";
+        btnDeseos.style.marginLeft = "12px";
+
+        // Configuración inicial del botón según si ya está guardado o no
+        if (estado.enListaDeseos) {
+            btnDeseos.innerText = "❤️ En tu Lista de Deseos";
+            btnDeseos.disabled = true;
+            btnDeseos.style.backgroundColor = "#1f2937";
+            btnDeseos.style.color = "#9ca3af";
+            btnDeseos.style.cursor = "not-allowed";
+        } else {
+            btnDeseos.innerText = "Añadir a lista de deseos";
+            btnDeseos.style.backgroundColor = "#4b5563";
+            btnDeseos.style.color = "#ffffff";
+        }
+
+        btnComprar.parentNode.appendChild(btnDeseos);
+
+        btnDeseos.addEventListener("click", async () => {
+            const usuarioLogueadoBtn = JSON.parse(localStorage.getItem("usuario"));
+
+            if (!usuarioLogueadoBtn) {
+                alert("Debes iniciar sesión para añadir este juego a tu lista de deseos.");
+                return;
+            }
+
+            try {
+                // Validación de seguridad de doble clic o solapamiento
+                const reVerificar = await verificarEstadoUsuario(usuarioLogueadoBtn.id_usuario);
+                
+                if (reVerificar.yaComprado) {
+                    alert("No puedes añadirlo: ¡Ya posees este juego en tu biblioteca!");
+                    btnDeseos.remove(); // Desaparece el botón ya que no aplica
+                    return;
+                }
+
+                if (reVerificar.enListaDeseos) {
+                    alert("Este juego ya está en tu lista de deseos.");
+                    return;
+                }
+
+                // Inserción limpia en Supabase
+                const { error: errorInsert } = await supabase
+                    .from("lista_deseos")
+                    .insert([{
+                        id_usuario: usuarioLogueadoBtn.id_usuario,
+                        id_juego: id_juego,
+                        notificar_oferta: true
+                    }]);
+
+                if (errorInsert) throw errorInsert;
+
+                alert("¡Juego añadido a tu lista de deseos!");
+                btnDeseos.innerText = "❤️ En tu Lista de Deseos";
+                btnDeseos.disabled = true;
+                btnDeseos.style.backgroundColor = "#1f2937";
+                btnDeseos.style.color = "#9ca3af";
+                btnDeseos.style.cursor = "not-allowed";
+
+            } catch (err) {
+                console.error("Error en la operación de lista_deseos:", err);
+                alert("No se pudo completar la acción. Verifica la base de datos.");
+            }
+        });
+
+        observer.disconnect();
+    }
+});
+
+if (infoJuego) {
+    observarInfoJuego.observe(infoJuego, { childList: true, subtree: true });
+}
